@@ -1,7 +1,49 @@
+body {
+    margin: 0;
+    padding: 0;
+    background-image: url("/static/snowing.webp");
+    background-size: cover;
+}
+
 #content {
-    background: black;
+    font-family: "Yanone Kaffeesatz", sans-serif;
+    font-optical-sizing: auto;
+    font-style: normal;
+    background: rgba(255, 255, 255, 0.5);
+    margin: 10px;
+    padding: 10px;
+    width: fit-content;
+    border-radius: 10px;
+}
+
+#navbar {
+    margin: 0;
 }
 
 #navbar ul {
-    
+    margin: 5px;
+    padding: 0;
+    list-style-type: none;
+}
+
+#navbar li {
+    display: inline-block;
+    background: rgba(255, 255, 255, 0.5);
+    padding: 10px;
+    margin: 5px;
+    border-radius: 10px;
+}
+
+#navbar li a {
+    margin: 0;
+    color: black;
+    font-family: "Yanone Kaffeesatz", sans-serif;
+    font-optical-sizing: auto;
+    font-style: bold;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+#navbar li a:hover {
+    color: #336cde;
 }

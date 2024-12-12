@@ -1,6 +1,17 @@
 import json
-
 from db.db import *
+from difflib import SequenceMatcher
+
+class Item:
+    def __init__(self, item_name, item_price):
+        self.__name = item_name
+        self.__price = item_price
+
+    def get_name(self):
+        return self.__name
+
+    def get_price(self):
+        return self.__price
 
 def create_customer_table():
     create_table("tblCustomer",
@@ -82,3 +93,18 @@ def init_sample_customers():
 
 def init_sample_inventory():
     init_sample("db/inventory.json", add_item)
+
+def get_similarity(word_a, word_b):
+    return SequenceMatcher(None, word_a, word_b).ratio()
+
+def search_inventory(search_item):
+    sqlstring = """
+    SELECT itemName, itemPrice FROM tblInventory;
+    """
+    items_sql = run_sql(sqlstring)
+    items_ranked = list()
+    for item_name, item_price in items_sql:
+        items_ranked.append((item_name, item_price, get_similarity(search_item, item_name)))
+    items_ranked.sort(key=lambda x: x[2], reverse=True)
+    items = [Item(item_name, item_price) for item_name, item_price, _ in items_ranked]
+    return items
