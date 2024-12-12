@@ -13,15 +13,30 @@
         <ul>
             {% for index in range(navbar.get_num_links()) %}
             <li>
-                <a href="{{ navbar.get_link(index) }}"}>{{ navbar.get_title(index) }}</a>
+                <a href="{{ navbar.get_link(index) }}">{{ navbar.get_title(index) }}</a>
             </li>
             {% endfor %}
+            <li>
+                <a href="{{ login_link }}">{{ login_title }}</a>
+            </li>
         </ul>
     </div>
 
     <div id="content">
         {% block content %}
         {% endblock %}
+
+        <div id="errors">
+            {% for error in errors %}
+                <p>{{ error }}</p>
+            {% endfor %}
+        </div>
+
+        <div id="successes">
+            {% for success in successes %}
+                <p>{{ success }}</p>
+            {% endfor %}
+        </div>
     </div>
 </body>
 </html>

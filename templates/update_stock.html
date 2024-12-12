@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="post">
+        <label for="item_id">Item id:</label><br>
+        <input type="number" id="item_id" name="item_id"><br>
+        <label for="item_quantity">Item quantity:</label><br>
+        <input type="number" id="item_quantity" name="item_quantity"><br>
+        <button type="submit">Update</button>
+    </form>
+{% endblock %}

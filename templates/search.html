@@ -3,15 +3,17 @@
 {% block content %}
     <form method="post">
         <label for="search">Search for item:</label>
-        <input type="text" id="search" name="search">
-    <button type="submit">Search</button>
+        <input type="text" id="search" name="search"><br>
+        <button type="submit">Search</button>
     </form>
-    <ul>
-        {% for result in results %}
-            <li>
-                {{ result.get_name() }}
-                {{ result.get_price() }}
-            </li>
-        {% endfor %}
-    </ul>
+    <div id="search">
+        <ul>
+            {% for result in results %}
+                <li>
+                    <a href="{{ result.get_link() }}">{{ result.get_name() }}</a>
+                      {{ result.get_price() }}<br><br>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
 {% endblock %}

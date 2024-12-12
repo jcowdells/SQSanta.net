@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <form method="post">
+        <label for="name">Name:</label><br>
+        <input type="text" id="name" name="name"><br>
+        <label for="email">Email address:</label><br>
+        <input type="text" id="email" name="email"><br>
+        <label for="address">Address:</label><br>
+        <input type="text" id="address" name="address"><br>
+        <label for="postcode">Postcode:</label><br>
+        <input type="text" id="postcode" name="postcode"><br>
+        <button type="submit">Register</button>
+    </form>
+{% endblock %}

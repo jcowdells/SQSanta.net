@@ -9,16 +9,33 @@ class DataType(Enum):
     PRIMARY_KEY = "INTEGER PRIMARY KEY AUTOINCREMENT"
     FOREIGN_KEY = "INTEGER"
 
+DATABASE = "app.db"
+
 def run_sql(*args):
-    connection = sqlite3.connect("app.db")
+    connection = sqlite3.connect(DATABASE)
     connection.execute("PRAGMA foreign_keys = 1")
     cursor = connection.cursor()
     cursor.execute(*args)
     connection.commit()
     info("Running SQL Statement:")
     for arg in args:
+        if isinstance(arg, str):
+            arg = arg.strip()
         info(arg)
     return cursor.fetchall()
+
+def run_sql_get_id(*args):
+    connection = sqlite3.connect(DATABASE)
+    connection.execute("PRAGMA foreign_keys = 1")
+    cursor = connection.cursor()
+    cursor.execute(*args)
+    connection.commit()
+    info("Running SQL Statement:")
+    for arg in args:
+        if isinstance(arg, str):
+            arg = arg.strip()
+        info(arg)
+    return cursor.lastrowid
 
 def create_table(table_name, **columns):
     columns_string = ""
@@ -60,4 +77,14 @@ def insert_table(table_name, **columns):
     INSERT INTO {table_name}({', '.join(columns.keys())}) VALUES ({unknown_string})
     """
     values = tuple(columns.values())
+    return run_sql_get_id(sqlstring, values)
+
+def update_table(table_name, primary_key, primary_value, **columns):
+    unknown_string = ", ".join([f"{name} = ?" for name in columns.keys()])
+    sqlstring = f"""
+    UPDATE {table_name}
+    SET {unknown_string}
+    WHERE {primary_key} = ?
+    """
+    values = (*list(columns.values()), primary_value)
     run_sql(sqlstring, values)

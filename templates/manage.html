@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Management options:</h2>
+    <div id="management">
+    <ul>
+        {% for index in range(management.get_num_links()) %}
+            <li>
+                <a href="{{ management.get_link(index) }}">{{ management.get_title(index) }}</a>
+            </li>
+        {% endfor %}
+    </ul>
+    </div>
+{% endblock %}

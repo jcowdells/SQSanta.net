@@ -3,7 +3,7 @@ class Navbar:
         self.__links = links
 
     def get_title(self, index):
-        return list(self.__links.keys())[index]
+        return list(self.__links.keys())[index].replace("_", " ")
 
     def get_link(self, index):
         return list(self.__links.values())[index]

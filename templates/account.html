@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Hello {{ customer.get_name() }}!</h2>
+    <div class="justify-left">
+        <h3>Account details:</h3>
+        <p>Address: {{ customer.get_address() }}</p>
+        <p>Postcode: {{ customer.get_postcode() }}</p>
+        <p>Email Address: {{ customer.get_email() }}</p>
+    </div>
+    <form method="post">
+        <button type="submit">Logout</button>
+    </form>
+{% endblock %}
