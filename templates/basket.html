@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+    {% if order.get_num_items() == 0 %}
+        Items will appear here when you order!
+    {% else %}
+        {% for index in range(order.get_num_items()) %}
+            {{ order.get_name(index) }}
+            {{ order.get_price(index) }}
+            {{ order.get_quantity(index) }}
+        {% endfor %}
+        Total price: {{ order.get_total_price() }}
+        <button type="submit">Order</button>
+    {% endif %}
+{% endblock %}

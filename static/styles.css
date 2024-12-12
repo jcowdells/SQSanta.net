@@ -9,15 +9,23 @@ body {
     font-family: "Yanone Kaffeesatz", sans-serif;
     font-optical-sizing: auto;
     font-style: normal;
+    font-size: 1.2rem;
     background: rgba(255, 255, 255, 0.5);
-    margin: 10px;
     padding: 10px;
-    width: fit-content;
+    width: 50%;
+    margin-left: auto;
+    margin-right: auto;
     border-radius: 10px;
+    text-align: center;
 }
 
 #navbar {
-    margin: 0;
+    margin: 0 0 20px 0;
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+    background-color: rgba(255, 255, 255, 0.25);
 }
 
 #navbar ul {
@@ -39,11 +47,52 @@ body {
     color: black;
     font-family: "Yanone Kaffeesatz", sans-serif;
     font-optical-sizing: auto;
-    font-style: bold;
+    font-style: normal;
     text-decoration: none;
     transition: 0.2s;
 }
 
 #navbar li a:hover {
+    color: #336cde;
+}
+
+#errors {
+    color: #de0018;
+}
+
+#successes {
+    color: #237700;
+}
+
+.justify-left {
+    width: 75%;
+    text-align: left;
+}
+
+#management ul {
+    list-style-type: none;
+    text-align: left;
+}
+
+#management li a {
+    color: black;
+    transition: 0.2s;
+}
+
+#management li a:hover {
+    color: #336cde;
+}
+
+#search ul {
+    list-style-type: none;
+    text-align: left;
+}
+
+#search li a {
+    color: black;
+    transition: 0.2s;
+}
+
+#search li a:hover {
     color: #336cde;
 }
