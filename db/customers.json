@@ -1,0 +1,32 @@
+[
+  {
+    "customer_name": "Sue Peruser",
+    "customer_address": "100 Washta Way",
+    "customer_postcode": "DY4 2PJ",
+    "customer_email": "sue.p@outlook.com"
+  },
+  {
+    "customer_name": "Blake Heseltine",
+    "customer_address": "5 Dead End Drive",
+    "customer_postcode": "DY1 8AX",
+    "customer_email": "blake.h@gmail.com"
+  },
+  {
+    "customer_name": "Amani Diot",
+    "customer_address": "11 Pleasant Parkway",
+    "customer_postcode": "DY8 1QR",
+    "customer_email": "blake.h@yahoo.com"
+  },
+  {
+    "customer_name": "Stuart Pidd",
+    "customer_address": "8 Bump Crack Lane",
+    "customer_postcode": "DY3 3LJ",
+    "customer_email": "stu.pidd@gmail.com"
+  },
+  {
+    "customer_name": "Terry Ball",
+    "customer_address": "88 Whatter Place",
+    "customer_postcode": "DY6 4KL",
+    "customer_email": "t.ball@outlook.com"
+  }
+]
