@@ -1,0 +1,27 @@
+[
+  {
+    "item_name": "Baubles",
+    "item_price": 499,
+    "items_in_stock": 1000
+  },
+  {
+    "item_name": "Fairy Lights",
+    "item_price": 1199,
+    "items_in_stock": 200
+  },
+  {
+    "item_name": "Christmas Tree",
+    "item_price": 7500,
+    "items_in_stock": 50
+  },
+  {
+    "item_name": "Frankincense and Myrrh",
+    "item_price": 999,
+    "items_in_stock": 150
+  },
+  {
+    "item_name": "Replica Baby Jesus",
+    "item_price": 10949,
+    "items_in_stock": 3
+  }
+]
