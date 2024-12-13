@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Your active orders:</h2>
+    <ul>
+        {% for index in range(orders.get_num_orders()) %}
+            <li>
+                <a href="{{ orders.get_link(index) }}">Order: {{ orders.get_date(index) }}</a><br>
+                Cost: {{ orders.get_price(index) }}<br>
+                Size: {{ orders.get_quantity(index) }} items
+            </li>
+        {% endfor %}
+    </ul>
+{% endblock %}

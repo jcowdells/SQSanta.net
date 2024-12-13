@@ -10,6 +10,12 @@
             {{ order.get_quantity(index) }}
         {% endfor %}
         Total price: {{ order.get_total_price() }}
-        <button type="submit">Order</button>
+        <form method="post" action="{{ order.get_handler() }}">
+            <button type="submit" name="order">Order</button>
+            <button type="submit" name="cancel">Cancel</button>
+            {% if not in_basket %}
+                <button type="submit" name="basket">Switch to basket</button>
+            {% endif %}
+        </form>
     {% endif %}
 {% endblock %}
