@@ -41,7 +41,6 @@ class Customer:
     def get_email(self):
         return self.__email
 
-
 class Order:
     def __init__(self):
         super().__init__()
@@ -101,6 +100,52 @@ class PastOrders:
 
     def get_num_orders(self):
         return len(self.__orders)
+
+class CustomerReport:
+    def __init__(self, customer_id, customer_name):
+        self.__id = customer_id
+        self.__name = name
+        self.__num_orders = 0
+        self.__max_cost = 0
+        self.__avg_cost = 0
+        self.__avg_quantity = 0
+        self.__items = list()
+
+    def add_item(self, item_name, item_quantity):
+        self.__items.append((item_name, item_quantity))
+
+    def get_num_items(self):
+        return len(self.__items)
+
+    def get_item_name(self, index):
+        return self.__items[index][0]
+
+    def get_item_quantity(self, index):
+        return self.__items[index][1]
+
+    def get_num_orders(self):
+        return self.__num_orders
+
+    def set_num_orders(self, num_orders):
+        self.__num_orders = num_orders
+
+    def get_max_cost(self):
+        return self.__max_cost
+
+    def set_max_cost(self):
+        return self.__max_cost
+
+    def get_avg_cost(self):
+        return self.__avg_cost
+
+    def set_avg_cost(self, avg_cost):
+        self.__avg_cost = avg_cost
+
+    def get_avg_quantity(self):
+        return self.__avg_quantity
+
+    def set_avg_quantity(self, avg_quantity):
+        self.__avg_quantity = avg_quantity
 
 def create_customer_table():
     create_table("tblCustomer",
