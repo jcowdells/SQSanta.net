@@ -104,12 +104,18 @@ class PastOrders:
 class CustomerReport:
     def __init__(self, customer_id, customer_name):
         self.__id = customer_id
-        self.__name = name
+        self.__name = customer_name
         self.__num_orders = 0
         self.__max_cost = 0
         self.__avg_cost = 0
         self.__avg_quantity = 0
         self.__items = list()
+
+    def get_id(self):
+        return self.__id
+
+    def get_name(self):
+        return self.__name
 
     def add_item(self, item_name, item_quantity):
         self.__items.append((item_name, item_quantity))
@@ -130,22 +136,43 @@ class CustomerReport:
         self.__num_orders = num_orders
 
     def get_max_cost(self):
-        return self.__max_cost
+        cost = self.__max_cost / 100
+        return f"£{cost:.2f}"
 
-    def set_max_cost(self):
-        return self.__max_cost
+    def set_max_cost(self, max_cost):
+        self.__max_cost = max_cost
 
     def get_avg_cost(self):
-        return self.__avg_cost
+        cost = self.__avg_cost / 100
+        return f"£{cost:.2f}"
 
     def set_avg_cost(self, avg_cost):
         self.__avg_cost = avg_cost
 
     def get_avg_quantity(self):
-        return self.__avg_quantity
+        return f"{self.__avg_quantity:.3f}"
 
     def set_avg_quantity(self, avg_quantity):
         self.__avg_quantity = avg_quantity
+
+class SalesReport:
+    def __init__(self):
+        self.__customers = list()
+
+    def add_customer(self, customer_name, customer_quantity, customer_email):
+        self.__customers.append((customer_name, customer_quantity, customer_email))
+
+    def get_num_customers(self):
+        return len(self.__customers)
+
+    def get_customer_name(self, index):
+        return self.__customers[index][0]
+
+    def get_customer_quantity(self, index):
+        return self.__customers[index][1]
+
+    def get_customer_email(self, index):
+        return self.__customers[index][2]
 
 def create_customer_table():
     create_table("tblCustomer",
@@ -160,8 +187,19 @@ def customer_exists(customer_email):
     sqlstring = """
     SELECT customerId FROM tblCustomer
     WHERE customerEmail = ?
+    LIMIT 1
     """
     values = (customer_email,)
+    matches = run_sql(sqlstring, values)
+    return len(matches) > 0
+
+def customer_exists_id(customer_id):
+    sqlstring = """
+        SELECT customerId FROM tblCustomer
+        WHERE customerId = ?
+        LIMIT 1
+        """
+    values = (customer_id,)
     matches = run_sql(sqlstring, values)
     return len(matches) > 0
 
@@ -169,6 +207,7 @@ def get_customer_id(customer_email):
     sqlstring = """
     SELECT customerId FROM tblCustomer
     where customerEmail = ?
+    LIMIT 1
     """
     values = (customer_email,)
     matches = run_sql(sqlstring, values)
@@ -179,6 +218,7 @@ def get_customer(customer_id):
     sqlstring = """
     SELECT customerName, customerAddress, customerPostcode, customerEmail FROM tblCustomer
     WHERE customerId = ?
+    LIMIT 1
     """
     values = (customer_id,)
     matches = run_sql(sqlstring, values)
@@ -212,6 +252,7 @@ def item_exists(item_id):
     sqlstring = """
     SELECT itemId FROM tblInventory
     WHERE itemId = ?
+    LIMIT 1
     """
     values = (item_id,)
     matches = run_sql(sqlstring, values)
@@ -221,6 +262,7 @@ def get_item(item_id):
     sqlstring = """
     SELECT itemName, itemPrice FROM tblInventory
     WHERE itemId = ?
+    LIMIT 1
     """
     values = (item_id,)
     matches = run_sql(sqlstring, values)
@@ -237,6 +279,7 @@ def get_item_quantity(item_id):
     sqlstring = """
     SELECT itemsInStock FROM tblInventory
     WHERE itemId = ?
+    LIMIT 1
     """
     values = (item_id,)
     matches = run_sql(sqlstring, values)
@@ -262,6 +305,7 @@ def get_order_cost(order_id):
     sqlstring = """
     SELECT orderTotalCost FROM tblOrder
     WHERE orderId = ?
+    LIMIT 1
     """
     values = (order_id,)
     matches = run_sql(sqlstring, values)
@@ -308,6 +352,7 @@ def has_order(order_id):
     sqlstring = """
     SELECT orderId FROM tblOrder
     WHERE orderId = ?
+    LIMIT 1
     """
     values = (order_id,)
     return len(values) > 0
@@ -331,6 +376,7 @@ def customer_has_order(customer_id, order_id):
     SELECT orderId FROM tblOrder
     WHERE customerId = ?
     AND orderId = ?
+    LIMIT 1
     """
     values = (customer_id, order_id)
     matches = run_sql(sqlstring, values)
@@ -385,3 +431,105 @@ def search_inventory(search_item):
     items_ranked.sort(key=lambda x: x[3], reverse=True)
     items = [Item(item_id, item_name, item_price) for item_id, item_name, item_price, _ in items_ranked]
     return items
+
+def get_customer_name(customer_id):
+    sqlstring = """
+    SELECT customerName FROM tblCustomer
+    WHERE customerId = ?
+    LIMIT 1
+    """
+    values = (customer_id,)
+    matches = run_sql(sqlstring, values)
+    if len(matches) > 0:
+        return matches[0][0]
+
+def get_ordered_items(customer_id):
+    sqlstring = """
+    SELECT tblInventory.itemName, SUM(tblOrderLine.quantity) FROM tblOrderLine
+    INNER JOIN tblOrder ON tblOrder.orderId = tblOrderLine.orderId
+    INNER JOIN tblInventory ON tblOrderLine.itemId = tblInventory.itemId
+    WHERE tblOrder.customerId = ?
+    GROUP BY tblInventory.itemId
+    """
+    values = (customer_id,)
+    return run_sql(sqlstring, values)
+
+def get_num_orders(customer_id):
+    sqlstring = """
+    SELECT COUNT(tblOrder.customerId) FROM tblOrder
+    WHERE tblOrder.customerId = ?
+    """
+    values = (customer_id,)
+    matches = run_sql(sqlstring, values)
+    if len(matches) > 0:
+        return matches[0][0]
+    return 0
+
+def get_largest_order(customer_id):
+    sqlstring = """
+    SELECT orderTotalCost FROM tblOrder
+    WHERE customerId = ?
+    ORDER BY orderTotalCost DESC
+    LIMIT 1
+    """
+    values = (customer_id,)
+    matches = run_sql(sqlstring, values)
+    if len(matches) > 0:
+        return matches[0][0]
+    return 0
+
+def get_average_cost(customer_id):
+    sqlstring = """
+    SELECT AVG(orderTotalCost) FROM tblOrder
+    WHERE customerId = ?
+    """
+    values = (customer_id,)
+    matches = run_sql(sqlstring, values)
+    if len(matches) > 0:
+        match = matches[0][0]
+        if match is not None:
+            return match
+    return 0
+
+def get_average_quantity(customer_id):
+    sqlstring = """
+    SELECT SUM(tblOrderLine.quantity) FROM tblOrder
+    INNER JOIN tblOrderLine ON tblOrderLine.orderId = tblOrder.orderId
+    WHERE tblOrder.customerId = ?
+    GROUP BY tblOrder.orderId
+    """
+    values = (customer_id,)
+    matches = run_sql(sqlstring, values)
+    num_matches = len(matches)
+    if num_matches > 0:
+        total = 0
+        for quantity in matches:
+            total += quantity[0]
+        total /= num_matches
+        return total
+    return 0
+
+def get_customer_report(customer_id):
+    customer_report = CustomerReport(customer_id, get_customer_name(customer_id))
+    customer_report.set_num_orders(get_num_orders(customer_id))
+    customer_report.set_max_cost(get_largest_order(customer_id))
+    customer_report.set_avg_cost(get_average_cost(customer_id))
+    customer_report.set_avg_quantity(get_average_quantity(customer_id))
+    for item_name, item_quantity in get_ordered_items(customer_id):
+        customer_report.add_item(item_name, item_quantity)
+    return customer_report
+
+def get_sales_report():
+    sqlstring = """
+    SELECT tblCustomer.customerName, SUM(tblOrderLine.quantity), tblCustomer.customerEmail FROM tblOrder
+    INNER JOIN tblCustomer ON tblOrder.customerId = tblCustomer.customerId
+    INNER JOIN tblOrderLine on tblOrder.orderId = tblOrderLine.orderId
+    GROUP BY tblCustomer.customerId
+    HAVING SUM(tblOrderLine.quantity) > 10
+    ORDER BY SUM(tblOrderLine.quantity) DESC
+    """
+    matches = run_sql(sqlstring)
+    sales_report = SalesReport()
+    for name, quantity, email in matches:
+        sales_report.add_customer(name, quantity, email)
+    return sales_report

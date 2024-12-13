@@ -2,10 +2,11 @@ import datetime
 
 from flask import Flask, render_template, session, request, url_for, redirect
 from log.log import *
-from sqsanta.navbar import Navbar
+from sqelves.navbar import Navbar
 from db.manager import search_inventory, add_customer, customer_exists, get_customer_id, get_customer, item_exists, \
     update_item_quantity, get_item, get_item_quantity, Order, add_order, init_tables, add_order_line, get_order, \
-    get_orders, has_order, customer_has_order, get_order_cost, update_order_cost, replace_order_stock, delete_order
+    get_orders, has_order, customer_has_order, get_order_cost, update_order_cost, replace_order_stock, delete_order, \
+    get_customer_report, customer_exists_id, get_sales_report, init_sample_customers, init_sample_inventory
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = "A_SECRET!!!!"
@@ -19,8 +20,18 @@ def render_base(template, **kwargs):
     if "customer" in session:
         login_link = "/account/"
         login_title = "Account"
-    return render_template(template, navbar=navbar, title="SQSanta.net", login_link=login_link, login_title=login_title,
+    return render_template(template, navbar=navbar, title="SQElves.net", login_link=login_link, login_title=login_title,
                            **kwargs)
+
+def check_admin():
+    errors = list()
+    if "customer" not in session:
+        return redirect(url_for("login"))
+    customer = get_customer(session["customer"])
+    if customer.get_email() != "admin":
+        errors.append("Admin access only! Please sign in using 'admin' to access this (only if you really are an admin)!")
+        return render_base("base.html", errors=errors)
+    return False
 
 @app.route("/")
 @app.route("/index/")
@@ -77,20 +88,19 @@ def account():
         return redirect(url_for("login"))
     customer = get_customer(session["customer"])
     if request.method == "POST":
-        session.pop("customer")
-        if "order" in session: session.pop("order")
-        return redirect(url_for("index"))
+        if "logout" in request.form:
+            session.pop("customer")
+            if "order" in session: session.pop("order")
+            return redirect(url_for("index"))
+        elif "report" in request.form:
+            return redirect(url_for("report"))
     return render_base("account.html", customer=customer)
 
 @app.route("/manage/")
 def manage():
-    errors = list()
-    if "customer" not in session:
-        return redirect(url_for("login"))
-    customer = get_customer(session["customer"])
-    if customer.get_email() != "admin":
-        errors.append("Admin access only! Please sign in using 'admin' to access this (only if you really are an admin)!")
-        return render_base("base.html", errors=errors)
+    admin_check = check_admin()
+    if admin_check:
+        return check_admin()
     return render_base("manage.html", management=management)
 
 @app.route("/basket/")
@@ -99,8 +109,6 @@ def basket():
         order = get_order(session["order"])
     else:
         order = Order()
-    if request.method == "POST":
-        pass
     return render_base("basket.html", order=order, in_basket=True)
 
 @app.route("/manage/update_stock/", methods=["GET", "POST"])
@@ -108,16 +116,43 @@ def update_stock():
     errors = list()
     successes = list()
     if request.method == "POST":
-        item_id = int(request.form["item_id"])
-        item_quantity = int(request.form["item_quantity"])
+        item_id = request.form["item_id"]
+        try:
+            item_quantity = int(request.form["item_quantity"])
+        except ValueError:
+            item_quantity = None
         if not item_exists(item_id):
             errors.append("Item does not exist!")
+        elif item_quantity is None:
+            errors.append("Item quantity is required!")
         elif item_quantity < 0:
             errors.append("Item cannot have a negative quantity!")
         else:
             update_item_quantity(item_id, item_quantity)
             successes.append("Item has been updated!")
     return render_base("update_stock.html", errors=errors, successes=successes)
+
+@app.route("/manage/generate_report/", methods=["GET", "POST"])
+def generate_report():
+    errors = list()
+    admin_check = check_admin()
+    if admin_check:
+        return check_admin()
+    if request.method == "POST":
+        customer_id = request.form["customer_id"]
+        if not customer_exists_id(customer_id):
+            errors.append("Customer does not exist!")
+            return render_base("generate_report.html", errors=errors)
+        return redirect(f"/report/{customer_id}/")
+    return render_base("generate_report.html")
+
+@app.route("/manage/sales_report/", methods=["GET", "POST"])
+def sales_report():
+    admin_check = check_admin()
+    if admin_check:
+        return check_admin()
+    report = get_sales_report()
+    return render_base("sales_report.html",report=report)
 
 @app.route("/items/<item_id>/", methods=["GET", "POST"])
 def items(item_id):
@@ -139,6 +174,8 @@ def items(item_id):
             item_quantity = int(request.form["item_quantity"])
             if item_quantity > get_item_quantity(item_id):
                 errors.append("Not enough items in stock!")
+            elif item_quantity <= 0:
+                errors.append("Cannot order less than 0 items!")
             else:
                 customer_id = session["customer"]
                 if "order" not in session:
@@ -183,6 +220,7 @@ def order(order_id):
 @app.route("/handler/<order_id>/", methods=["GET", "POST"])
 def handler(order_id):
     errors = list()
+    successes = list()
     try:
         order_id = int(order_id)
     except ValueError:
@@ -196,18 +234,62 @@ def handler(order_id):
         return render_base("base.html", errors=errors)
     if request.method == "POST":
         if "order" in request.form:
-            successes = ["Order placed successfully!"]
+            successes.append("Order placed successfully!")
+            if "order" in session:
+                session.pop("order")
             return render_base("base.html", successes=successes)
         elif "cancel" in request.form:
             if "order" in session:
                 session.pop("order")
             replace_order_stock(order_id)
             delete_order(order_id)
-            return redirect(url_for("orders"))
+            successes.append("Order cancelled successfully!")
+            return render_base("base.html", successes=successes)
         elif "basket" in request.form:
             session["order"] = order_id
             return redirect(url_for("basket"))
     return redirect(url_for("index"))
+
+@app.route("/report/")
+def report():
+    if "customer" not in session:
+        return redirect(url_for("login"))
+    customer_id = int(session["customer"])
+    report = get_customer_report(customer_id)
+    return render_base("report.html", report=report)
+
+@app.route("/report/<customer_id>/", methods=["GET", "POST"])
+def report_id(customer_id):
+    admin_check = check_admin()
+    if admin_check:
+        return check_admin()
+    errors = list()
+    try:
+        customer_id = int(customer_id)
+    except ValueError:
+        customer_id = None
+    if customer_id is None or not customer_exists_id(customer_id):
+        errors.append("Unknown customer!")
+        return render_base("base.html", errors=errors)
+    if "customer" not in session:
+        return redirect(url_for("login"))
+    customer = get_customer(session["customer"])
+    if customer.get_email() != "admin" and customer_id != int(session["customer"]):
+        errors.append("You cannot access someone else's report!")
+        return render_base("base.html", errors=errors)
+    report = get_customer_report(customer_id)
+    return render_base("report.html", report=report)
+
+@app.route("/manage/generate_defaults/")
+def generate_defaults():
+    successes = list()
+    admin_check = check_admin()
+    if admin_check:
+        return check_admin()
+    init_sample_customers()
+    init_sample_inventory()
+    successes.append("Successfully generated defaults!")
+    return render_base("base.html", successes=successes)
 
 with app.app_context():
     navbar = Navbar(
@@ -221,7 +303,9 @@ with app.app_context():
 
     management = Navbar(
         Update_Stock=url_for("update_stock"),
-        Generate_Report=url_for("index")
+        Customer_Report=url_for("generate_report"),
+        Sales_Report=url_for("sales_report"),
+        Generate_Defaults=url_for("generate_defaults")
     )
 
 if __name__ == '__main__':

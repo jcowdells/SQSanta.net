@@ -4,11 +4,15 @@
     {% if order.get_num_items() == 0 %}
         Items will appear here when you order!
     {% else %}
-        {% for index in range(order.get_num_items()) %}
-            {{ order.get_name(index) }}
-            {{ order.get_price(index) }}
-            {{ order.get_quantity(index) }}
-        {% endfor %}
+        <div class="unordered_list">
+            <ul>
+                {% for index in range(order.get_num_items()) %}
+                    <li>
+                        {{ order.get_quantity(index) }}x {{ order.get_name(index) }} ({{ order.get_price(index) }} each)
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
         Total price: {{ order.get_total_price() }}
         <form method="post" action="{{ order.get_handler() }}">
             <button type="submit" name="order">Order</button>
