@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <h2>Sales report:</h2>
+    <div class="unordered_list">
+        <ul>
+            {% for index in range(report.get_num_customers()) %}
+                <li>
+                    <h3>Ranking: {{ index + 1 }}</h3>
+                    Customer name: {{ report.get_customer_name(index) }}<br>
+                    Items purchased: {{ report.get_customer_quantity(index) }}<br>
+                    Customer email: {{ report.get_customer_email(index) }}<br>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+{% endblock %}

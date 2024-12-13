@@ -1,5 +1,23 @@
 {% extends "base.html" %}
 
 {% block content %}
-
+    <h2>Report for: {{ report.get_name() }} (Id={{ report.get_id() }})</h2>
+    <p>Placed orders: {{ report.get_num_orders() }}</p>
+    <p>Most expensive order: {{ report.get_max_cost() }}</p>
+    <p>Average cost per order: {{ report.get_avg_cost() }}</p>
+    <p>Average items per order: {{ report.get_avg_quantity() }}</p>
+    <h3>Quantity ordered of each item:</h3>
+    {% if report.get_num_items() > 0 %}
+        <div class="unordered_list">
+            <ul>
+                {% for index in range(report.get_num_items()) %}
+                    <li>
+                        {{ report.get_item_quantity(index) }}x {{ report.get_item_name(index) }}
+                    </li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% else %}
+        No orders yet!
+    {% endif %}
 {% endblock %}

@@ -69,30 +69,20 @@ body {
     text-align: left;
 }
 
+.unordered_list ul {
+    list-style-type: none;
+}
+
+.unordered_list li a {
+    color: black;
+    transition: 0.2s;
+}
+
+.unordered_list li a:hover {
+    color: #336cde;
+}
+
 #management ul {
     list-style-type: none;
     text-align: left;
-}
-
-#management li a {
-    color: black;
-    transition: 0.2s;
-}
-
-#management li a:hover {
-    color: #336cde;
-}
-
-#search ul {
-    list-style-type: none;
-    text-align: left;
-}
-
-#search li a {
-    color: black;
-    transition: 0.2s;
-}
-
-#search li a:hover {
-    color: #336cde;
 }
