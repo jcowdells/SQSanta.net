@@ -45,6 +45,8 @@ class Customer:
 class Order:
     def __init__(self):
         super().__init__()
+        self.__id = 0
+        self.__total_price = 0
         self.__items = list()
 
     def add_item(self, item_name, item_price, item_quantity):
@@ -54,7 +56,8 @@ class Order:
         return self.__items[index][0]
 
     def get_price(self, index):
-        return self.__items[index][1]
+        price = self.__items[index][1] / 100
+        return f"£{price:.2f}"
 
     def get_quantity(self, index):
         return self.__items[index][2]
@@ -62,8 +65,42 @@ class Order:
     def get_num_items(self):
         return len(self.__items)
 
+    def set_total_price(self, total_price):
+        self.__total_price = total_price
+
     def get_total_price(self):
-        pass
+        price = self.__total_price / 100
+        return f"£{price:.2f}"
+
+    def set_id(self, order_id):
+        self.__id = order_id
+
+    def get_handler(self):
+        return f"/handler/{self.__id}/"
+
+class PastOrders:
+    def __init__(self):
+        self.__orders = list()
+
+    def add_order(self, order_id, order_date, order_price, order_quantity):
+        self.__orders.append((order_id, order_date, order_price, order_quantity))
+
+    def get_link(self, index):
+        order_id = self.__orders[index][0]
+        return f"/orders/{order_id}/"
+
+    def get_date(self, index):
+        return self.__orders[index][1]
+
+    def get_price(self, index):
+        price = self.__orders[index][2] / 100
+        return f"£{price:.2f}"
+
+    def get_quantity(self, index):
+        return self.__orders[index][3]
+
+    def get_num_orders(self):
+        return len(self.__orders)
 
 def create_customer_table():
     create_table("tblCustomer",
@@ -176,6 +213,21 @@ def add_order(customer_id, order_date, order_total_cost):
                  orderTotalCost=order_total_cost
                  )
 
+def get_order_cost(order_id):
+    sqlstring = """
+    SELECT orderTotalCost FROM tblOrder
+    WHERE orderId = ?
+    """
+    values = (order_id,)
+    matches = run_sql(sqlstring, values)
+    if len(matches) > 0:
+        return matches[0][0]
+
+def update_order_cost(order_id, order_total_cost):
+    update_table("tblOrder",
+                 "orderId", order_id,
+                 orderTotalCost=order_total_cost)
+
 def create_order_line_table():
     create_table("tblOrderLine",
                  orderId=(DataType.FOREIGN_KEY, "tblOrder"),
@@ -203,7 +255,58 @@ def get_order(order_id):
     order = Order()
     for match in matches:
         order.add_item(*match)
+    order.set_id(order_id)
+    order.set_total_price(get_order_cost(order_id))
     return order
+
+def has_order(order_id):
+    sqlstring = """
+    SELECT orderId FROM tblOrder
+    WHERE orderId = ?
+    """
+    values = (order_id,)
+    return len(values) > 0
+
+def get_orders(customer_id):
+    sqlstring = """
+    SELECT tblOrder.orderId, tblOrder.orderDate, tblOrder.orderTotalCost, SUM(tblOrderLine.quantity) FROM tblOrder
+    INNER JOIN tblOrderLine ON tblOrder.orderId = tblOrderLine.orderId
+    WHERE tblOrder.customerId = ?
+    GROUP BY tblOrder.orderId
+    """
+    values = (customer_id,)
+    matches = run_sql(sqlstring, values)
+    orders = PastOrders()
+    for match in matches:
+        orders.add_order(*match)
+    return orders
+
+def customer_has_order(customer_id, order_id):
+    sqlstring = """
+    SELECT orderId FROM tblOrder
+    WHERE customerId = ?
+    AND orderId = ?
+    """
+    values = (customer_id, order_id)
+    matches = run_sql(sqlstring, values)
+    return len(matches) > 0
+
+def replace_order_stock(order_id):
+    sqlstring = """
+    SELECT tblInventory.itemId, tblOrderLine.quantity FROM tblOrderLine
+    INNER JOIN tblInventory on tblOrderLine.itemId = tblInventory.itemId
+    WHERE tblOrderLine.orderId = orderId
+    """
+    matches = run_sql(sqlstring)
+    for item_id, quantity in matches:
+        prev_quantity = get_item_quantity(item_id)
+        update_item_quantity(item_id, prev_quantity + quantity)
+
+def delete_order(order_id):
+    delete_from_table("tblOrderLine",
+                      orderId=order_id)
+    delete_from_table("tblOrder",
+                      orderId=order_id)
 
 def init_tables():
     create_customer_table()
@@ -234,6 +337,6 @@ def search_inventory(search_item):
     items_ranked = list()
     for item_id, item_name, item_price in items_sql:
         items_ranked.append((item_id, item_name, item_price, get_similarity(search_item, item_name)))
-    items_ranked.sort(key=lambda x: x[2], reverse=True)
+    items_ranked.sort(key=lambda x: x[3], reverse=True)
     items = [Item(item_id, item_name, item_price) for item_id, item_name, item_price, _ in items_ranked]
     return items

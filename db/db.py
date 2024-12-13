@@ -88,3 +88,12 @@ def update_table(table_name, primary_key, primary_value, **columns):
     """
     values = (*list(columns.values()), primary_value)
     run_sql(sqlstring, values)
+
+def delete_from_table(table_name, condition="AND", **columns):
+    unknown_string = f" {condition} ".join([f"{name} = ?" for name in columns.keys()])
+    sqlstring = f"""
+    DELETE FROM {table_name}
+    WHERE {unknown_string}
+    """
+    values = tuple(columns.values())
+    run_sql(sqlstring, values)
