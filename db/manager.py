@@ -386,9 +386,10 @@ def replace_order_stock(order_id):
     sqlstring = """
     SELECT tblInventory.itemId, tblOrderLine.quantity FROM tblOrderLine
     INNER JOIN tblInventory on tblOrderLine.itemId = tblInventory.itemId
-    WHERE tblOrderLine.orderId = orderId
+    WHERE tblOrderLine.orderId = ?
     """
-    matches = run_sql(sqlstring)
+    values = (order_id,)
+    matches = run_sql(sqlstring, values)
     for item_id, quantity in matches:
         prev_quantity = get_item_quantity(item_id)
         update_item_quantity(item_id, prev_quantity + quantity)
@@ -448,7 +449,7 @@ def get_ordered_items(customer_id):
     SELECT tblInventory.itemName, SUM(tblOrderLine.quantity) FROM tblOrderLine
     INNER JOIN tblOrder ON tblOrder.orderId = tblOrderLine.orderId
     INNER JOIN tblInventory ON tblOrderLine.itemId = tblInventory.itemId
-    WHERE tblOrder.customerId = ?
+    WHERE tblOrder.customerId = ? AND tblOrder.orderDate BETWEEN 2024-12-01 AND 2025-01-01
     GROUP BY tblInventory.itemId
     """
     values = (customer_id,)
